@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shuai.IdentityServer.V1._0.Areas.Identity.Data;
 
 namespace Shuai.IdentityServer.V1._0
 {
@@ -23,6 +26,28 @@ namespace Shuai.IdentityServer.V1._0
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddDbContext<AppIdentityContext>(options =>
+            //        options.UseSqlServer(
+            //            Configuration.GetConnectionString("AppIdentityContextConnection")));
+
+            //services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //    .AddEntityFrameworkStores<AppIdentityContext>();
+
+            services.AddDbContext<AppIdentityContext>(options =>
+            {
+                options.UseMySQL(Configuration.GetConnectionString("AppIdentityContextConnection"));
+            });
+
+            services.AddIdentity<AppUser, IdentityRole>(options =>
+             {
+                 options.SignIn.RequireConfirmedAccount = false;
+                 options.Password.RequireNonAlphanumeric = false;
+                 options.Password.RequireUppercase = false;
+             })
+            .AddDefaultUI()
+            .AddDefaultTokenProviders()
+            .AddEntityFrameworkStores<AppIdentityContext>();
+
             services.AddControllersWithViews();
         }
 
@@ -43,6 +68,8 @@ namespace Shuai.IdentityServer.V1._0
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
