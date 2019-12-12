@@ -9,5 +9,7 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
     // Add profile data for application users by adding properties to the AppUser class
     public class AppUser : IdentityUser
     {
+        //[PersonalData]
+        //public string Name { get; set; }
     }
 }
