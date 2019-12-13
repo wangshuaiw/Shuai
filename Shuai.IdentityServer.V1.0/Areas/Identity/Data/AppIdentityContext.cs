@@ -31,33 +31,37 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
 
 
             //https://docs.microsoft.com/zh-cn/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-3.1
+            //builder.Entity<AppUser>(b =>
+            //{
+            //    b.ToTable("Users", "Identity");  //Mysql 不支持schemas
+            //});
             builder.Entity<AppUser>(b =>
             {
-                b.ToTable("Users", "Identity");
+                b.ToTable("Users");
             });
             builder.Entity<IdentityUserClaim<string>>(b =>
             {
-                b.ToTable("UserClaims", "Identity");
+                b.ToTable("UserClaims");
             });
             builder.Entity<IdentityUserLogin<string>>(b =>
             {
-                b.ToTable("UserLogins", "Identity");
+                b.ToTable("UserLogins");
             });
             builder.Entity<IdentityUserToken<string>>(b =>
             {
-                b.ToTable("UserTokens", "Identity");
+                b.ToTable("UserTokens");
             });
             builder.Entity<IdentityRole>(b =>
             {
-                b.ToTable("Roles", "Identity");
+                b.ToTable("Roles");
             });
             builder.Entity<IdentityRoleClaim<string>>(b =>
             {
-                b.ToTable("RoleClaims", "Identity");
+                b.ToTable("RoleClaims");
             });
             builder.Entity<IdentityUserRole<string>>(b =>
             {
-                b.ToTable("UserRoles", "Identity");
+                b.ToTable("UserRoles");
             });
             
         }

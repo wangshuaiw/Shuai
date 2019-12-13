@@ -10,7 +10,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Shuai.IdentityServer.V1._0.Areas.Identity.Data;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace Shuai.IdentityServer.V1._0
 {
@@ -35,7 +38,7 @@ namespace Shuai.IdentityServer.V1._0
 
             services.AddDbContext<AppIdentityContext>(options =>
             {
-                options.UseMySQL(Configuration.GetConnectionString("AppIdentityContextConnection"));
+                options.UseMySql(Configuration.GetConnectionString("AppIdentityContextConnection"));
             });
 
             services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -48,7 +51,13 @@ namespace Shuai.IdentityServer.V1._0
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<AppIdentityContext>();
 
-            services.AddControllersWithViews();
+            services.AddRazorPages();
+            services.AddControllersWithViews(config=> 
+            {
+                //添加默认身份验证规则：登录后才能访问
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,7 +87,12 @@ namespace Shuai.IdentityServer.V1._0
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
+
+            AppIdentitySeedData.InitializeAsync(app).Wait();
         }
+
+        
     }
 }
