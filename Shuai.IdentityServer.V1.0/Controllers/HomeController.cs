@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Shuai.IdentityServer.V1._0.Controllers
 {
-    [AllowAnonymous]
+    
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,11 +20,13 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
         }
 
+        [Authorize(Roles ="test")]
         public IActionResult Privacy()
         {
             return View();

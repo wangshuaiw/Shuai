@@ -27,62 +27,64 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
                 var roleManage = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var configration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-                string roleName = "SuperAdministrators";
-                var roleExist = await roleManage.RoleExistsAsync(roleName);
+                //string roleName = "SuperAdministrators";
+                var roleExist = await roleManage.RoleExistsAsync(AppConsts.SuperAdminRoleName);
                 if (!roleExist)
                 {
                     var role = new IdentityRole()
                     {
-                        Name = roleName,
-                        NormalizedName = roleName
+                        Name = AppConsts.SuperAdminRoleName,
+                        NormalizedName = AppConsts.SuperAdminRoleName
                     };
                     var roleResult = await roleManage.CreateAsync(role);
                     if (roleResult.Succeeded)
                     {
-                        logger.LogInformation($"Create role {roleName} success!");
+                        logger.LogInformation($"Create role {AppConsts.SuperAdminRoleName} success!");
                     }
                     else
                     {
-                        logger.LogError($"Create role {roleName} fail!");
+                        logger.LogError($"Create role {AppConsts.SuperAdminRoleName} fail!");
                         return;
                     }
                 }
 
-                string userName = "SuperAdmin";
-                var user = await userManage.FindByNameAsync(userName);
+                
+                var user = await userManage.FindByNameAsync(AppConsts.SuperAdminUserName);
                 if (user == null)
                 {
                     user = new AppUser()
                     {
-                        UserName = userName,
-                        EmailConfirmed = true,
-                        NormalizedUserName = userName,
-                        PhoneNumberConfirmed = true
+                        UserName = AppConsts.SuperAdminUserName,
+                        //EmailConfirmed = true,
+                        //NormalizedUserName = AppConsts.SuperAdminUserName,
+                        Email=$"{AppConsts.SuperAdminUserName}@shuai.com",
+                        //NormalizedEmail = $"{AppConsts.SuperAdminUserName}@shuai.com",
+                        //PhoneNumberConfirmed = true
                     };
                     string password = configration.GetValue<string>("AppSetting:SuperAdminPwd");
                     var userResult = await userManage.CreateAsync(user, password);
                     if (userResult.Succeeded)
                     {
-                        logger.LogInformation($"Create user {userName} success!");
+                        logger.LogInformation($"Create user {AppConsts.SuperAdminUserName} success!");
                     }
                     else
                     {
-                        logger.LogError($"Create user {userName} fail!");
+                        logger.LogError($"Create user {AppConsts.SuperAdminUserName} fail!");
                         return;
                     }
                 }
 
-                bool isInRole = await userManage.IsInRoleAsync(user, roleName);
+                bool isInRole = await userManage.IsInRoleAsync(user, AppConsts.SuperAdminRoleName);
                 if (!isInRole)
                 {
-                    var toRoleResult = await userManage.AddToRoleAsync(user, roleName);
+                    var toRoleResult = await userManage.AddToRoleAsync(user, AppConsts.SuperAdminRoleName);
                     if (toRoleResult.Succeeded)
                     {
-                        logger.LogInformation($"Add user {userName} to Role {roleName} success!");
+                        logger.LogInformation($"Add user {AppConsts.SuperAdminUserName} to Role {AppConsts.SuperAdminRoleName} success!");
                     }
                     else
                     {
-                        logger.LogError($"Add user {userName} to Role {roleName} fail!");
+                        logger.LogError($"Add user {AppConsts.SuperAdminUserName} to Role {AppConsts.SuperAdminRoleName} fail!");
                     }
                 }
 

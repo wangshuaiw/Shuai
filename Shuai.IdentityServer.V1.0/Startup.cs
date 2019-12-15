@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Shuai.IdentityServer.V1._0.Areas.Identity.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Shuai.IdentityServer.V1._0.Authorization;
 
 namespace Shuai.IdentityServer.V1._0
 {
@@ -58,6 +59,8 @@ namespace Shuai.IdentityServer.V1._0
                 var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                 config.Filters.Add(new AuthorizeFilter(policy));
             });
+
+            services.AddSingleton<IAuthorizationHandler, SuperAdminAuthorizationHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
