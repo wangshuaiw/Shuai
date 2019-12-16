@@ -55,11 +55,11 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
                     user = new AppUser()
                     {
                         UserName = AppConsts.SuperAdminUserName,
-                        //EmailConfirmed = true,
-                        //NormalizedUserName = AppConsts.SuperAdminUserName,
+                        EmailConfirmed = true,
+                        NormalizedUserName = AppConsts.SuperAdminUserName,
                         Email=$"{AppConsts.SuperAdminUserName}@shuai.com",
-                        //NormalizedEmail = $"{AppConsts.SuperAdminUserName}@shuai.com",
-                        //PhoneNumberConfirmed = true
+                        NormalizedEmail = $"{AppConsts.SuperAdminUserName}@shuai.com",
+                        PhoneNumberConfirmed = true
                     };
                     string password = configration.GetValue<string>("AppSetting:SuperAdminPwd");
                     var userResult = await userManage.CreateAsync(user, password);

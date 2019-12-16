@@ -26,7 +26,7 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             return View();
         }
 
-        [Authorize(Roles ="test")]
+        
         public IActionResult Privacy()
         {
             return View();
