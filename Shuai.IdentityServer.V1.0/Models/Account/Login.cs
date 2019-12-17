@@ -17,7 +17,7 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
         [Display(Name ="密码")]
         public string Password { set; get; }
 
-        [Display(Name = "记住密码?")]
+        [Display(Name = "记住密码")]
         public bool RememberMe { set; get; }
 
 

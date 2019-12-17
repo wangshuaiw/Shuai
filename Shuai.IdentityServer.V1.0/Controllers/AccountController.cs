@@ -81,5 +81,18 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 return View(login);
             }
         }
+
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult Register(string returnUrl = null)
+        {
+            ViewData["returnUrl"] = returnUrl;
+            return View();
+        }
     }
 }
