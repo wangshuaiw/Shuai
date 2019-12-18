@@ -1,7 +1,7 @@
 ﻿@using Shuai.IdentityServer.V1._0.Models.Account
 @model Login
 @{
-    ViewData["Title"] = "Log in";
+    ViewData["Title"] = "登录";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -42,3 +42,7 @@
     </div>
 </div>
 
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

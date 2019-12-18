@@ -94,5 +94,80 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             ViewData["returnUrl"] = returnUrl;
             return View();
         }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> Register(Register register)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(register);
+            }
+            if(register.RegisterType=="name"&&string.IsNullOrWhiteSpace(register.UserName))
+            {
+                ModelState.AddModelError(string.Empty, "用户名不可为空！");
+                return View(register);
+            }
+            if(register.RegisterType=="email"&&string.IsNullOrWhiteSpace(register.Email))
+            {
+                ModelState.AddModelError(string.Empty, "邮箱不可为空！");
+                return View(register);
+            }
+            if(register.RegisterType=="phone"&&string.IsNullOrWhiteSpace(register.Phone))
+            {
+                ModelState.AddModelError(string.Empty, "手机号码不可为空！");
+                return View(register);
+            }
+
+            AppUser user = null;
+
+            if (register.RegisterType == "name")
+            {
+                user = await UserManager.FindByNameAsync(register.UserName);
+                if(user==null)
+                {
+                    user = await UserManager.FindByEmailAsync(register.UserName);
+                }
+                if(user==null)
+                {
+                    user = await IdentityContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == register.UserName);
+                }
+                if(user!=null)
+                {
+                    ModelState.AddModelError(string.Empty, "用户名已存在！");
+                    return View(register);
+                }
+            }
+            if(register.RegisterType == "email")
+            {
+                //user = await UserManager.FindByNameAsync(register.UserName);
+                //if (user == null)
+                //{
+                //    user = await UserManager.FindByEmailAsync(register.UserName);
+                //}
+                //if (user == null)
+                //{
+                //    user = await IdentityContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == register.UserName);
+                //}
+                //if (user != null)
+                //{
+                //    ModelState.AddModelError(string.Empty, "用户名已存在！");
+                //    return View(register);
+                //}
+            }
+
+            string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
+
+            
+
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                return Redirect(returnUrl);
+            }
+        }
     }
 }

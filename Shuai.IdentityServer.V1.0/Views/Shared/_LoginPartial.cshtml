@@ -19,11 +19,12 @@
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        @*<a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>*@
+        <a class="nav-link text-dark" id="register" asp-controller="Account" asp-action="Register">注册</a>
     </li>
     <li class="nav-item">
         @*<a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>*@
-        <a class="nav-link text-dark" id="login" asp-controller="Account" asp-action="Login">Login</a>
+        <a class="nav-link text-dark" id="login" asp-controller="Account" asp-action="Login">登录</a>
     </li>
 }
 </ul>

@@ -1,7 +1,78 @@
-﻿
+﻿@model Shuai.IdentityServer.V1._0.Models.Account.Register
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "注册";
 }
 
-<h1>Register</h1>
+<h1>@ViewData["Title"]</h1>
+<br />
+<div class="row">
+    <div class="col-md-6">
+
+        <ul id="nav-register" class="nav nav-tabs" role="tablist">
+            @*<li class="nav-item">
+                <a class="nav-link active" id="name-tab" href="#name" aria-controls="name" data-type="name" role="tab" aria-selected="true">用户名注册</a>
+            </li>*@
+            <li class="nav-item">
+                <a class="nav-link active" id="email-tab" href="#email" aria-controls="email" data-type="email" role="tab" aria-selected="true">邮箱注册</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="phone-tab" href="#phone" aria-controls="phone" data-type="phone" role="tab" aria-selected="false">手机号注册</a>
+            </li>
+        </ul>
+
+        <form method="post" asp-controller="Account" asp-action="Register">
+            <br />
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="tab-content">
+                @*<div role="tabpanel" class="tab-pane active" id="name" aria-labelledby="name-tab">
+                    <div class="form-group">
+                        <label asp-for="UserName"></label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                </div>*@
+                <div role="tabpanel" class="tab-pane" id="email" aria-labelledby="email-tab">
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="phone" aria-labelledby="phone-tab">
+                    <div class="form-group">
+                        <label asp-for="Phone"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <input id="registerType" type="hidden" asp-for="RegisterType" value=""/>
+            <button type="submit" class="btn btn-primary">注册</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+        $('#nav-register a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+            $('#registerType').val($(this).data("type"));
+            //$('#registerType').val($(this).attr("aria-controls"));
+        })
+    </script>
+}
+
 
