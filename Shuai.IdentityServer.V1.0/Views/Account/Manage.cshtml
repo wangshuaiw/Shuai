@@ -1,0 +1,78 @@
+﻿@model Shuai.IdentityServer.V1._0.Models.Account.Manage
+@{
+    ViewData["Title"] = "管理您的账户";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item"><a class="nav-link" id="tab-profile" href="#profile">个人信息</a></li>
+            <li class="nav-item"><a class="nav-link" id="tab-password" href="#password">密码重设</a></li>
+            <li class="nav-item"><a class="nav-link" id="tab-close" href="#delete">注销账户</a></li>
+        </ul>
+    </div>
+    <div class="col-md-9">
+        <div class="tab-content">
+            <div class="tab-pane" id="profile">
+                <h4>修改个人信息</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="profile-form" method="post" asp-controller="Account" asp-action="UpdateProfile">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <div class="form-group">
+                                <label asp-for="Profile.UserName"></label>
+                                <input asp-for="Profile.UserName" class="form-control" disabled />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Profile.Email"></label>
+                                <input asp-for="Profile.Email" class="form-control" />
+                                <span asp-validation-for="Profile.Email" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Profile.Phone"></label>
+                                <input asp-for="Profile.Phone" class="form-control" />
+                                <span asp-validation-for="Profile.Phone" class="text-danger"></span>
+                            </div>
+                            <button id="update-profile-button" type="submit" class="btn btn-primary">保存</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="password">
+                <h4>修改密码</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="change-password-form" method="post" asp-controller="Account" asp-action="ChangePassword">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <div class="form-group">
+                                <label asp-for="ChangePassword.OldPassword"></label>
+                                <input asp-for="ChangePassword.OldPassword" class="form-control" />
+                                <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="ChangePassword.NewPassword"></label>
+                                <input asp-for="ChangePassword.NewPassword" class="form-control" />
+                                <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="ChangePassword.ConfirmPassword"></label>
+                                <input asp-for="ChangePassword.ConfirmPassword" class="form-control" />
+                                <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="btn btn-primary">修改密码</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="close">
+                <h4>注销账户</h4>
+                <p>
+                    <strong>确定删除账户？</strong>
+                </p>
+                <button class="btn btn-primary" asp-controller="Account" asp-action="CloseAccount">注销账户</button>
+            </div>
+        </div>
+    </div>
+</div>

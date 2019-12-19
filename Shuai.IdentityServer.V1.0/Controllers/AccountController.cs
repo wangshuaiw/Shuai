@@ -37,6 +37,11 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             return View();
         }
 
+        /// <summary>
+        /// 用户登录
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(Login login)
@@ -95,6 +100,11 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             return View();
         }
 
+        /// <summary>
+        /// 注册用户
+        /// </summary>
+        /// <param name="register"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register(Register register)
@@ -180,9 +190,29 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 }
             }
             return View(register);
-            
+        }
 
-            
+        public IActionResult Manage()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(Manage manage)
+        {
+            return View(manage);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(Manage manage)
+        {
+            return View(manage);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CloseAccount()
+        {
+            return View();
         }
     }
 }
