@@ -153,7 +153,7 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             
             if(user==null)
             {
-                throw new Exception("注册用户内部错误");
+                throw new Exception("注册用户未指定注册类型");
             }
 
             string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
