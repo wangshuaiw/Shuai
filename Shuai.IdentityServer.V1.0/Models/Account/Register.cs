@@ -10,8 +10,8 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
     {
         public string RegisterType { set; get; }
 
-        [Display(Name ="用户名")]
-        public string UserName { set; get; }
+        //[Display(Name ="用户名")]
+        //public string UserName { set; get; }
 
         [Display(Name ="邮箱")]
         [EmailAddress(ErrorMessage ="邮箱格式不正确")]

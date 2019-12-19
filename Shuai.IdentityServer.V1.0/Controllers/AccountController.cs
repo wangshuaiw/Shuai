@@ -103,11 +103,6 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             {
                 return View(register);
             }
-            if(register.RegisterType=="name"&&string.IsNullOrWhiteSpace(register.UserName))
-            {
-                ModelState.AddModelError(string.Empty, "用户名不可为空！");
-                return View(register);
-            }
             if(register.RegisterType=="email"&&string.IsNullOrWhiteSpace(register.Email))
             {
                 ModelState.AddModelError(string.Empty, "邮箱不可为空！");
@@ -121,53 +116,73 @@ namespace Shuai.IdentityServer.V1._0.Controllers
 
             AppUser user = null;
 
-            if (register.RegisterType == "name")
-            {
-                user = await UserManager.FindByNameAsync(register.UserName);
-                if(user==null)
-                {
-                    user = await UserManager.FindByEmailAsync(register.UserName);
-                }
-                if(user==null)
-                {
-                    user = await IdentityContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == register.UserName);
-                }
-                if(user!=null)
-                {
-                    ModelState.AddModelError(string.Empty, "用户名已存在！");
-                    return View(register);
-                }
-            }
             if(register.RegisterType == "email")
             {
-                //user = await UserManager.FindByNameAsync(register.UserName);
-                //if (user == null)
-                //{
-                //    user = await UserManager.FindByEmailAsync(register.UserName);
-                //}
-                //if (user == null)
-                //{
-                //    user = await IdentityContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == register.UserName);
-                //}
-                //if (user != null)
-                //{
-                //    ModelState.AddModelError(string.Empty, "用户名已存在！");
-                //    return View(register);
-                //}
+                user = await UserManager.FindByEmailAsync(register.Email);
+                if (user != null)
+                {
+                    ModelState.AddModelError(string.Empty, "此邮箱已注册用户！");
+                    return View(register);
+                }
+                else
+                {
+                    user = new AppUser()
+                    {
+                        UserName = register.Email,
+                        Email = register.Email
+                    };
+                }
+            }
+            else if(register.RegisterType =="phone")
+            {
+                user = await IdentityContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == register.Phone);
+                if(user!=null)
+                {
+                    ModelState.AddModelError(string.Empty, "此手机号码已注册用户！");
+                    return View(register);
+                }
+                else
+                {
+                    user = new AppUser()
+                    {
+                        UserName = register.Phone,
+                        PhoneNumber = register.Phone
+                    };
+                }
+            }
+            
+            if(user==null)
+            {
+                throw new Exception("注册用户内部错误");
             }
 
             string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
 
-            
-
-            if (string.IsNullOrWhiteSpace(returnUrl))
+            var result = await UserManager.CreateAsync(user, register.Password);
+            if(result.Succeeded)
             {
-                return RedirectToAction("Index", "Home");
+                await SignManager.SignInAsync(user, false);
+
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    return Redirect(returnUrl);
+                }
             }
             else
             {
-                return Redirect(returnUrl);
+                foreach(var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty,error.Description);
+                }
             }
+            return View(register);
+            
+
+            
         }
     }
 }
