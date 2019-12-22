@@ -192,26 +192,54 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             return View(register);
         }
 
-        public IActionResult Manage()
+        public async Task<IActionResult> Manage()
         {
-            return View();
+            var user = await UserManager.GetUserAsync(User);
+
+            Profile profile = new Profile()
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Phone = user.PhoneNumber
+            };
+
+            Manage manage = new Manage()
+            {
+                SelectTab = ManageSelectTab.Profile,
+                Profile = profile
+            };
+            return View(manage);
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(Manage manage)
         {
+            manage.SelectTab = ManageSelectTab.Profile;
+            if(!ModelState.IsValid)
+            {
+                return View(manage);
+            }
+            if(manage.Profile==null||string.IsNullOrWhiteSpace(manage.Profile.UserName))
+            {
+                ModelState.AddModelError(string.Empty, "请输入用户名");
+                return View(manage);
+            }
+            var user = await UserManager.GetUserAsync(User);
+            await UserManager.SetUserNameAsync(user, manage.Profile.UserName);
             return View(manage);
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangePassword(Manage manage)
         {
+            manage.SelectTab = ManageSelectTab.ChangePassword;
             return View(manage);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CloseAccount()
+        public async Task<IActionResult> CloseAccount(Manage manage)
         {
+            manage.SelectTab = ManageSelectTab.CloseAccount;
             return View();
         }
     }

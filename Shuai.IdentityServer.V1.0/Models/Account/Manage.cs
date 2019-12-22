@@ -14,6 +14,27 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
 
         public ChangePassword ChangePassword { set; get; }
 
+        public static string ActiveProfileTab(ManageSelectTab tab)
+        {
+            if (tab == ManageSelectTab.Profile)
+                return "active";
+            else
+                return "";
+        }
+
+        public static string ActivePasswordTab(ManageSelectTab tab)
+        {
+            if (tab == ManageSelectTab.ChangePassword)
+                return "active";
+            else
+                return "";
+        }
+
+        public static string ActiveCloseTab(ManageSelectTab tab)
+        {
+            return tab == ManageSelectTab.CloseAccount ? "active" : "";
+        }
+
     }
 
     public enum ManageSelectTab
