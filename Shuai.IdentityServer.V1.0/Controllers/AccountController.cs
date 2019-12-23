@@ -225,8 +225,52 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 return View(manage);
             }
             var user = await UserManager.GetUserAsync(User);
-            await UserManager.SetUserNameAsync(user, manage.Profile.UserName);
-            return View(manage);
+            if(user.UserName!=manage.Profile.UserName)
+            {
+                manage.Profile.UserName = manage.Profile.UserName.Trim();
+                var existUserSameName = await UserManager.FindByNameAsync(manage.Profile.UserName);
+                if (existUserSameName != null)
+                {
+                    ModelState.AddModelError(string.Empty, "用户名已被占用");
+                    return View("Manage", manage);
+                }
+                var changeNameResult = await UserManager.SetUserNameAsync(user, manage.Profile.UserName);
+                if (!changeNameResult.Succeeded)
+                    throw new Exception("修改用户名失败！");
+            }
+            if(user.Email!=manage.Profile.Email)
+            {
+                manage.Profile.Email = manage.Profile.Email.Trim();
+                if (!string.IsNullOrWhiteSpace(manage.Profile.Email))
+                {
+                    var existUserSameEmail = await UserManager.FindByEmailAsync(manage.Profile.Email);
+                    if(existUserSameEmail!=null)
+                    {
+                        ModelState.AddModelError(string.Empty, "邮箱已被占用");
+                        return View("Manage", manage);
+                    }
+                }
+                var changeEmailResult = await UserManager.SetEmailAsync(user, manage.Profile.Email);
+                if (!changeEmailResult.Succeeded)
+                    throw new Exception("修改邮箱失败！");
+            }
+            if(user.PhoneNumber!=manage.Profile.Phone)
+            {
+                manage.Profile.Phone = manage.Profile.Phone.Trim();
+                if (!string.IsNullOrWhiteSpace(manage.Profile.Phone))
+                {
+                    var existUserSamePhone = await IdentityContext.Users.AnyAsync(u => u.PhoneNumber == manage.Profile.Phone);
+                    if(existUserSamePhone)
+                    {
+                        ModelState.AddModelError(string.Empty, "手机号码已被占用");
+                        return View("Manage", manage);
+                    }
+                }
+                var changePhoneResult = await UserManager.SetPhoneNumberAsync(user, manage.Profile.Phone);
+                if (!changePhoneResult.Succeeded)
+                    throw new Exception("修改手机号码失败");
+            }
+            return View("Manage",manage);
         }
 
         [HttpPost]
