@@ -60,6 +60,11 @@ namespace Shuai.IdentityServer.V1._0
                 config.Filters.Add(new AuthorizeFilter(policy));
             });
 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+            });
+
             services.AddSingleton<IAuthorizationHandler, SuperAdminAuthorizationHandler>();
         }
 

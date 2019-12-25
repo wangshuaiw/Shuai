@@ -10,6 +10,10 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
     {
         public ManageSelectTab SelectTab { set; get; }
 
+        //public bool Success { set; get; }
+
+        public string StatusMessage { set; get; }
+
         public Profile Profile { set; get; }
 
         public ChangePassword ChangePassword { set; get; }

@@ -20,6 +20,7 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
         [Display(Name = "记住密码")]
         public bool RememberMe { set; get; }
 
+        public string ReturnUrl { set; get; }
 
     }
 }

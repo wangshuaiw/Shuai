@@ -31,5 +31,7 @@ namespace Shuai.IdentityServer.V1._0.Models.Account
         [DataType(DataType.Password)]
         [Compare("Password",ErrorMessage ="密码不一致")]
         public string ConfirmPassword { set; get; }
+
+        public string ReturnUrl { set; get; }
     }
 }

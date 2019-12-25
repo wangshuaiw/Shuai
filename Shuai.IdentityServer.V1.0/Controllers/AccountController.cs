@@ -51,7 +51,7 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 return View(login);
             }
 
-            string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
+            //string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
 
             var user = await UserManager.FindByNameAsync(login.NameOrEmailOrPhone);
             if(user==null)
@@ -71,13 +71,13 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             var result =await SignManager.PasswordSignInAsync(user, login.Password, login.RememberMe,false);
             if(result.Succeeded)
             {
-                if (string.IsNullOrWhiteSpace(returnUrl))
+                if (string.IsNullOrWhiteSpace(login.ReturnUrl))
                 {
                     return RedirectToAction("Index","Home");
                 }
                 else
                 {
-                    return Redirect(returnUrl);
+                    return Redirect(login.ReturnUrl);
                 }
             }
             else
@@ -166,20 +166,20 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 throw new Exception("注册用户未指定注册类型");
             }
 
-            string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
+            //string returnUrl = ViewData["returnUrl"] == null ? null : ViewData["returnUrl"].ToString();
 
             var result = await UserManager.CreateAsync(user, register.Password);
             if(result.Succeeded)
             {
                 await SignManager.SignInAsync(user, false);
 
-                if (string.IsNullOrWhiteSpace(returnUrl))
+                if (string.IsNullOrWhiteSpace(register.ReturnUrl))
                 {
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    return Redirect(returnUrl);
+                    return Redirect(register.ReturnUrl);
                 }
             }
             else
@@ -217,12 +217,12 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             manage.SelectTab = ManageSelectTab.Profile;
             if(!ModelState.IsValid)
             {
-                return View(manage);
+                return View("Manage", manage);
             }
             if(manage.Profile==null||string.IsNullOrWhiteSpace(manage.Profile.UserName))
             {
                 ModelState.AddModelError(string.Empty, "请输入用户名");
-                return View(manage);
+                return View("Manage", manage);
             }
             var user = await UserManager.GetUserAsync(User);
             if(user.UserName!=manage.Profile.UserName)
@@ -236,7 +236,14 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 }
                 var changeNameResult = await UserManager.SetUserNameAsync(user, manage.Profile.UserName);
                 if (!changeNameResult.Succeeded)
-                    throw new Exception("修改用户名失败！");
+                {
+                    ModelState.AddModelError(string.Empty, "修改用户名失败");
+                    foreach (var error in changeNameResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("Manage", manage);
+                }
             }
             if(user.Email!=manage.Profile.Email)
             {
@@ -252,7 +259,14 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 }
                 var changeEmailResult = await UserManager.SetEmailAsync(user, manage.Profile.Email);
                 if (!changeEmailResult.Succeeded)
-                    throw new Exception("修改邮箱失败！");
+                {
+                    ModelState.AddModelError(string.Empty, "修改邮箱失败");
+                    foreach (var error in changeEmailResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("Manage", manage);
+                }
             }
             if(user.PhoneNumber!=manage.Profile.Phone)
             {
@@ -268,8 +282,16 @@ namespace Shuai.IdentityServer.V1._0.Controllers
                 }
                 var changePhoneResult = await UserManager.SetPhoneNumberAsync(user, manage.Profile.Phone);
                 if (!changePhoneResult.Succeeded)
-                    throw new Exception("修改手机号码失败");
+                {
+                    ModelState.AddModelError(string.Empty, "修改手机号码失败");
+                    foreach (var error in changePhoneResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View("Manage", manage);
+                }
             }
+            manage.StatusMessage = "修改个人信息成功！";
             return View("Manage",manage);
         }
 
@@ -277,14 +299,50 @@ namespace Shuai.IdentityServer.V1._0.Controllers
         public async Task<IActionResult> ChangePassword(Manage manage)
         {
             manage.SelectTab = ManageSelectTab.ChangePassword;
-            return View(manage);
+            if(!ModelState.IsValid)
+            {
+                return View("Manage", manage);
+            }
+            if(manage.ChangePassword==null
+                ||string.IsNullOrWhiteSpace(manage.ChangePassword.OldPassword)
+                ||string.IsNullOrWhiteSpace(manage.ChangePassword.NewPassword)
+                ||string.IsNullOrWhiteSpace(manage.ChangePassword.ConfirmPassword))
+            {
+                ModelState.AddModelError(string.Empty, "请输入新旧密码");
+                return View("Manage", manage);
+            }
+            var user = await UserManager.GetUserAsync(User);
+            var result = await UserManager.ChangePasswordAsync(user, manage.ChangePassword.OldPassword, manage.ChangePassword.NewPassword);
+            if(!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "修改密码失败");
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View("Manage", manage);
+            }
+            await SignManager.RefreshSignInAsync(user);
+            manage.StatusMessage = "修改密码成功！";
+            return View("Manage",manage);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CloseAccount(Manage manage)
+        public async Task<IActionResult> CloseAccount()
         {
-            manage.SelectTab = ManageSelectTab.CloseAccount;
-            return View();
+            //manage.SelectTab = ManageSelectTab.CloseAccount;
+
+            var user = await UserManager.GetUserAsync(User);
+
+            var result = await UserManager.DeleteAsync(user);
+            if(!result.Succeeded)
+            {
+                throw new Exception("删除用户失败");
+            }
+
+            await SignManager.SignOutAsync();
+            //manage.StatusMessage = "删除用户成功！";
+            return RedirectToAction("Index", "Home");
         }
     }
 }

@@ -27,6 +27,14 @@
         </ul>
     </div>
     <div class="col-md-9">
+        @if (!String.IsNullOrEmpty(Model.StatusMessage))
+        {
+            //var statusMessageClass = Model.Success ? "success" : "danger";
+            <div class="alert alert-success alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                @Model.StatusMessage
+            </div>
+        }
         <div class="tab-content">
             <div class="tab-pane @Manage.ActiveProfileTab(Model.SelectTab)" id="profile" role="tabpanel" aria-labelledby="tab-profile">
                 <h4>修改个人信息</h4>
@@ -36,7 +44,7 @@
                             <div asp-validation-summary="All" class="text-danger"></div>
                             <div class="form-group">
                                 <label asp-for="Profile.UserName"></label>
-                                <input asp-for="Profile.UserName" class="form-control"/>
+                                <input asp-for="Profile.UserName" class="form-control" />
                             </div>
                             <div class="form-group">
                                 <label asp-for="Profile.Email"></label>
@@ -84,8 +92,15 @@
                 <p>
                     <strong>确定删除账户？</strong>
                 </p>
-                <button class="btn btn-primary" asp-controller="Account" asp-action="CloseAccount">注销账户</button>
+                <form id="change-password-form" method="post" asp-controller="Account" asp-action="CloseAccount">
+                    <button class="btn btn-primary">注销账户</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
