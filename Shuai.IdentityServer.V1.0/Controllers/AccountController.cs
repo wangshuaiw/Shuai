@@ -15,17 +15,17 @@ namespace Shuai.IdentityServer.V1._0.Controllers
     {
         private UserManager<AppUser> UserManager { get; }
 
-        private RoleManager<IdentityRole> RoleManager { get; }
+        //private RoleManager<IdentityRole> RoleManager { get; }
 
         private AppIdentityContext IdentityContext { get; }
 
         private SignInManager<AppUser> SignManager { get; }
 
 
-        public AccountController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, AppIdentityContext context,SignInManager<AppUser> signManager) 
+        public AccountController(UserManager<AppUser> userManager, AppIdentityContext context,SignInManager<AppUser> signManager) 
         {
             UserManager = userManager;
-            RoleManager = roleManager;
+            //RoleManager = roleManager;
             IdentityContext = context;
             SignManager = signManager;
         }
