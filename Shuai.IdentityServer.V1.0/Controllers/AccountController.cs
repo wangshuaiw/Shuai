@@ -344,5 +344,12 @@ namespace Shuai.IdentityServer.V1._0.Controllers
             //manage.StatusMessage = "删除用户成功！";
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await SignManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
     }
 }
