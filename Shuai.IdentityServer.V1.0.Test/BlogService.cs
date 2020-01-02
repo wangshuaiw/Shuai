@@ -41,5 +41,10 @@ namespace Shuai.IdentityServer.V1._0.Test
 
             return await query.ToListAsync();
         }
+
+        public async Task<Blog> GetBlog()
+        {
+            return await _context.Blogs.FirstOrDefaultAsync(b => b.Name == "AAA");
+        }
     }
 }

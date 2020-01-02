@@ -12,6 +12,7 @@ using Shuai.IdentityServer.V1._0.Controllers;
 using Shuai.IdentityServer.V1._0.Models.Account;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -120,19 +121,14 @@ namespace Shuai.IdentityServer.V1._0.Test
         [TestMethod]
         public async Task PostLogin_NotFundUser_ReturnAViewResultWithModeStateError()
         {
-            var data = new List<AppUser>{ new AppUser() { Id = "test"} }.AsQueryable();
 
             UserManager.Setup(repo => repo.FindByNameAsync(It.IsAny<string>())).ReturnsAsync((AppUser)null).Verifiable();
             UserManager.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((AppUser)null).Verifiable();
 
-            var mockSet = new Mock<DbSet<AppUser>>();
-            mockSet.As<IQueryable<AppUser>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<AppUser>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<AppUser>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<AppUser>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            Context.Setup(repo => repo.Users).Returns(mockSet.Object).Verifiable();
-
-            AccountController controller = new AccountController(UserManager.Object, Context.Object, SignInManager.Object);
+            var opts = new DbContextOptionsBuilder<AppIdentityContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+                  .Options;
+            var ctx = new AppIdentityContext(opts);
+            AccountController controller = new AccountController(UserManager.Object, ctx, SignInManager.Object);
             var result = await controller.Login(new Login());
             //assert
             var state = controller.ModelState[string.Empty];
