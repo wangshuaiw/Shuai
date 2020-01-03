@@ -14,7 +14,7 @@ namespace Shuai.IdentityServer.V1._0.Test
         [TestMethod]
         public void TestMethod1()
         {
-
+            
         }
 
         //[TestMethod]
