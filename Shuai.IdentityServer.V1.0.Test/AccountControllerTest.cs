@@ -11,13 +11,7 @@ using Shuai.IdentityServer.V1._0.Areas.Identity.Data;
 using Shuai.IdentityServer.V1._0.Controllers;
 using Shuai.IdentityServer.V1._0.Models.Account;
 using System;
-using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Shuai.IdentityServer.V1._0.Test
@@ -102,8 +96,7 @@ namespace Shuai.IdentityServer.V1._0.Test
 
             var opts = new DbContextOptionsBuilder<AppIdentityContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
                   .Options;
-            var context = GetContextInMemoryDatabase();
-            
+            using var context = GetContextInMemoryDatabase();
             AccountController controller = new AccountController(mockMgr.Object, context, mockSignMgr.Object);
 
             //act
@@ -128,18 +121,143 @@ namespace Shuai.IdentityServer.V1._0.Test
             mockMgr.Setup(repo => repo.FindByNameAsync(It.IsAny<string>())).ReturnsAsync(new AppUser());
             var mockSignMgr = GetSignInManagerMock(mockMgr.Object);
             mockSignMgr.Setup(repo => repo.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed);
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed)
+                .Verifiable();
             var mockCtx = GetContextMock();
             AccountController controller = new AccountController(mockMgr.Object, mockCtx.Object, mockSignMgr.Object);
 
             //act
-            var result = await controller.Login(new Login() { NameOrEmailOrPhone = "test"});
+            var result = await controller.Login(new Login());
 
             //assert
             var pwdError = controller.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage == "密码错误！");
             Assert.IsInstanceOfType(result, typeof(ViewResult));
             Assert.AreEqual(pwdError, true);
+            mockSignMgr.Verify();
         }
 
+        /// <summary>
+        /// 登陆：用户名登陆，重定向Home/Index
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostLogin_UserNameLogin_ReturnARedirectViewResultToHomeIndex()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            mockUserMgr.Setup(repo => repo.FindByNameAsync(It.IsAny<string>())).ReturnsAsync(new AppUser()).Verifiable();
+            mockSignMgr.Setup(repo => repo.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success)
+                .Verifiable();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+
+            //act
+            var result = await controller.Login(new Login());
+
+            //assert
+            Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+            Assert.AreEqual(((RedirectToActionResult)result).ControllerName, "Home");
+            Assert.AreEqual(((RedirectToActionResult)result).ActionName, "Index");
+            mockUserMgr.Verify();
+            mockSignMgr.Verify();
+            
+        }
+
+        /// <summary>
+        /// 登陆：Email登陆，重定向到指定的Url
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostLogin_EmailLogin_ReurnARedirectViewResultToDesignatedUrl()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            mockUserMgr.Setup(repo => repo.FindByNameAsync(It.IsAny<string>())).ReturnsAsync((AppUser)null).Verifiable();
+            mockUserMgr.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(new AppUser()).Verifiable();
+            mockSignMgr.Setup(repo => repo.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success)
+                .Verifiable();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+            string designatedUrl = "Account/Test";
+
+            //act
+            var result = await controller.Login(new Login() { ReturnUrl = designatedUrl });
+
+            //assert
+            Assert.IsInstanceOfType(result, typeof(RedirectResult));
+            Assert.AreEqual(((RedirectResult)result).Url, designatedUrl);
+            mockUserMgr.Verify();
+            mockSignMgr.Verify();
+        }
+
+        /// <summary>
+        /// 登陆：手机号码登陆
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostLogin_PhoneLogin_ReturnARedirectViewResultToHomeIndex()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            
+            mockUserMgr.Setup(repo => repo.FindByNameAsync(It.IsAny<string>())).ReturnsAsync((AppUser)null).Verifiable();
+            mockUserMgr.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((AppUser)null).Verifiable();
+            
+            mockSignMgr.Setup(repo => repo.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success)
+                .Verifiable();
+            using (var context = GetContextInMemoryDatabase())
+            {
+                string phone = "11111111111";
+                await context.Users.AddAsync(new AppUser() { PhoneNumber = phone });
+                await context.SaveChangesAsync();
+                AccountController controller = new AccountController(mockUserMgr.Object, context, mockSignMgr.Object);
+
+                //act
+                var result = await controller.Login(new Login() { NameOrEmailOrPhone = phone });
+
+                //assert
+                Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+                Assert.AreEqual(((RedirectToActionResult)result).ControllerName, "Home");
+                Assert.AreEqual(((RedirectToActionResult)result).ActionName, "Index");
+                mockUserMgr.Verify();
+                mockSignMgr.Verify();
+            }
+        }
+
+        /// <summary>
+        /// 注册页面：检查ViewData是否正确传输值
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public void Register_RetrunUrl_ReturnAViewResultWithReturnUrlViewData()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+            string returnUrl = "ReturnUrl";
+
+            //act
+            var result = controller.Register(returnUrl);
+
+            //assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual(returnUrl, ((ViewResult)result).ViewData["returnUrl"]);
+        }
+
+        //注册：邮箱为空
+        //注册：手机号为空
+        //注册：邮箱已被占用
+        //注册：手机号也被占用
+        //注册：注册类型未指定
+        //注册：邮箱注册，未指定returnUrl
+        //注册：手机注册，指定returnUrl
     }
 }
