@@ -252,11 +252,118 @@ namespace Shuai.IdentityServer.V1._0.Test
             Assert.AreEqual(returnUrl, ((ViewResult)result).ViewData["returnUrl"]);
         }
 
-        //注册：邮箱为空
-        //注册：手机号为空
-        //注册：邮箱已被占用
-        //注册：手机号也被占用
+        /// <summary>
+        /// 注册：邮箱为空
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostRegister_EmailNull_ReturnAViewResultWithNoEmailModelError()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+
+            //act
+            var result = await controller.Register(new Register() { RegisterType = "email" });
+
+            //assert
+            var error = controller.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage == "邮箱不可为空！");
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual(error, true);
+        }
+
+        /// <summary>
+        /// 注册：手机号为空
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostRegister_PhoneNull_ReturnAViewResultWithNoPhoneModelError()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+
+            //act
+            var result = await controller.Register(new Register() { RegisterType = "phone" });
+
+            //assert
+            var error = controller.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage == "手机号码不可为空！");
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual(error, true);
+        }
+
+        /// <summary>
+        /// 注册：邮箱已被占用
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostRegister_EmailExist_ReturnAViewResultWithExistEmailModelError()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            mockUserMgr.Setup(repo => repo.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(new AppUser()).Verifiable();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+
+            //act
+            var result = await controller.Register(new Register() { RegisterType = "email" });
+
+            //assert
+            var error = controller.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage == "此邮箱已注册用户！");
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            Assert.AreEqual(error, true);
+            mockUserMgr.Verify();
+        }
+
+        /// <summary>
+        /// 注册：手机号也被占用
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task PostRegister_PhoneExist_ReturnAViewResultWithExistPhoneModelError()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            using(var context = GetContextInMemoryDatabase())
+            {
+                string phone = "11111111111";
+                await context.Users.AddAsync(new AppUser() { PhoneNumber = phone });
+                await context.SaveChangesAsync();
+                AccountController controller = new AccountController(mockUserMgr.Object, context, mockSignMgr.Object);
+
+                //act
+                var result = await controller.Register(new Register() { RegisterType = "phone", Phone = phone });
+
+                //assert
+                var error = controller.ModelState[string.Empty].Errors.Any(e => e.ErrorMessage == "此手机号码已注册用户！");
+                Assert.IsInstanceOfType(result, typeof(ViewResult));
+                Assert.AreEqual(error, true);
+            }
+        }
+
         //注册：注册类型未指定
+        [TestMethod]
+        public async Task PostRegister_RrrorRegisterType_ThrowException()
+        {
+            //arrange
+            var mockUserMgr = GetUserManagerMock();
+            var mockSignMgr = GetSignInManagerMock(mockUserMgr.Object);
+            var mockCtx = GetContextMock();
+            AccountController controller = new AccountController(mockUserMgr.Object, mockCtx.Object, mockSignMgr.Object);
+
+            //act
+            var result = await controller.Register(new Register() { RegisterType = "error" });
+
+            //assert
+            //Assert.ThrowsException()
+
+        }
         //注册：邮箱注册，未指定returnUrl
         //注册：手机注册，指定returnUrl
     }
