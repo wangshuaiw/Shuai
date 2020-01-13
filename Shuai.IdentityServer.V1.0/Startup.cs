@@ -15,6 +15,7 @@ using Shuai.IdentityServer.V1._0.Areas.Identity.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Shuai.IdentityServer.V1._0.Authorization;
+using System.Reflection;
 
 namespace Shuai.IdentityServer.V1._0
 {
@@ -60,6 +61,21 @@ namespace Shuai.IdentityServer.V1._0
                 config.Filters.Add(new AuthorizeFilter(policy));
             });
 
+            string assemblyName = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+            services.AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = builder => builder.UseMySql(Configuration.GetConnectionString("AppIdentityContextConnection"), sql => sql.MigrationsAssembly(assemblyName));
+                })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = builder => builder.UseMySql(Configuration.GetConnectionString("AppIdentityContextConnection"), sql => sql.MigrationsAssembly(assemblyName));
+                })
+                .AddAspNetIdentity<AppUser>();
+                
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Account/Login";
@@ -86,9 +102,11 @@ namespace Shuai.IdentityServer.V1._0
 
             app.UseRouting();
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
 
-            app.UseAuthorization();
+            app.UseIdentityServer();
+
+            app.UseAuthorization(); //放在UseIdentityServer后面
 
             app.UseEndpoints(endpoints =>
             {

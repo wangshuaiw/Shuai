@@ -1,11 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using IdentityModel;
+using IdentityServer4;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
@@ -15,6 +21,7 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
         public static async Task InitializeAsync(IApplicationBuilder app)
         {
             await InitSuperAdminUserAsync(app);
+
         }
 
         private static async Task InitSuperAdminUserAsync(IApplicationBuilder app)
@@ -90,6 +97,63 @@ namespace Shuai.IdentityServer.V1._0.Areas.Identity.Data
 
 
             }
+        }
+
+        private static async Task InitIdentityServerConfig(IApplicationBuilder app)
+        {
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+                var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                context.Database.Migrate();
+                //if()
+            }
+        }
+
+        public static IEnumerable<IdentityResource> GetIdentityResources()
+        {
+            var customProfile = new IdentityResource(name: "custom.profile", displayName: "Custom profile", claimTypes: new[] { "role" });
+
+            return new IdentityResource[]
+            {
+                new IdentityResources.OpenId(),
+                new IdentityResources.Profile(),
+                customProfile
+            };
+        }
+
+        public static IEnumerable<ApiResource> GetApis()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("api1","My API",new List<string>(){ JwtClaimTypes.Role })
+            };
+        }
+
+        public static IEnumerable<Client> GetClients()
+        {
+            return new List<Client>
+            {
+                new Client()
+                {
+                    ClientId = "client",
+                    AllowedGrantTypes=GrantTypes.ClientCredentials,
+                    ClientSecrets={new Secret("secret".Sha256())},
+                    AllowedScopes={ "api1" }
+                },
+                new Client()
+                {
+                    ClientId="ro.client",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    ClientSecrets ={new Secret("secret".Sha256())},
+                    AllowedScopes={ "api1", IdentityServerConstants.StandardScopes.OpenId, IdentityServerConstants.StandardScopes.Profile, "custom.profile" },
+                    Claims = new List<Claim>
+                    {
+                        new Claim(JwtClaimTypes.Role,"admin")
+                    }
+                }
+            };
         }
     }
 }
